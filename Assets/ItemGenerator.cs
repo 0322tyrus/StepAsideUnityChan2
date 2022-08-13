@@ -20,7 +20,8 @@ public class ItemGenerator : MonoBehaviour
 
     //Unityちゃんのオブジェクト
     private GameObject unitychan;
-    private int distance;
+    //ユニティちゃんのZ座標を記録
+    private float position_z;
 
 
 
@@ -28,7 +29,11 @@ public class ItemGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-       
+        //Unityちゃんのオブジェクトを取得
+        this.unitychan = GameObject.Find("unitychan");
+
+        //ユニティちゃんのスタート位置（Z座標）
+        position_z = this.unitychan.transform.position.z;
 
 
         //一定の距離ごとにアイテムを生成
@@ -76,8 +81,54 @@ public class ItemGenerator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-       //unitychanとの距離が40mであるとき、ランダムにアイテムを生成→連続生成されてしまう
-    
+        //ユニティちゃんのZ座標から保存したZ座標で相対距離を得る
+        float distance = this.unitychan.transform.position.z - position_z;
+
+        //１５メートルごとに生成のタイミングを得る と、スタートからゴールの間だけ生成
+        if (distance > 15f && this.unitychan.transform.position.z > startPos && this.unitychan.transform.position.z < goalPos)
+        {
+            //ユニティちゃんの現在位置で更新（Z座標）
+            position_z = this.unitychan.transform.position.z;
+
+            //Debug.Log( "Unityちゃんの位置:" + this.unitychan.transform.position.z);
+
+            //どのアイテムを出すのかをランダムに設定
+            int num = Random.Range(1, 11);
+            if (num <= 2)
+            {
+                //コーンをx軸方向に一直線に生成
+                for (float j = -1; j <= 1; j += 0.4f)
+                {
+                    GameObject cone = Instantiate(conePrefab);
+                    cone.transform.position = new Vector3(4 * j, cone.transform.position.y, this.unitychan.transform.position.z + 40f);
+                }
+            }
+            else
+            {
+
+                //レーンごとにアイテムを生成
+                for (int j = -1; j <= 1; j++)
+                {
+                    //アイテムの種類を決める
+                    int item = Random.Range(1, 11);
+                    //アイテムを置くZ座標のオフセットをランダムに設定
+                    int offsetZ = Random.Range(-5, 6);
+                    //60%コイン配置:30%車配置:10%何もなし
+                    if (1 <= item && item <= 6)
+                    {
+                        //コインを生成
+                        GameObject coin = Instantiate(coinPrefab);
+                        coin.transform.position = new Vector3(posRange * j, coin.transform.position.y, this.unitychan.transform.position.z + 40f + offsetZ);
+                    }
+                    else if (7 <= item && item <= 9)
+                    {
+                        //車を生成
+                        GameObject car = Instantiate(carPrefab);
+                        car.transform.position = new Vector3(posRange * j, car.transform.position.y, this.unitychan.transform.position.z + 40f + offsetZ);
+                    }
+                }
+            }
+        }
 
     }
 }
